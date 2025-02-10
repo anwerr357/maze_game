@@ -1,2 +1,2 @@
 # maze_game
-maze game developped in c++ 
+maze game developed in c++ 
