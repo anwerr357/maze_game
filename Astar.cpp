@@ -77,7 +77,7 @@ pair<int, vector<pair<int, int>>> aStar(vector<vector<char>>& grid, pair<int, in
                     double f = new_g + heuristic(nx, ny, end.first, end.second); // f(n) = g(n) + h(n)
                     pq.push(Cell{nx, ny, f});
                 }
-            }
+            }   
         }
     }
     if(flag){
