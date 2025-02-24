@@ -1,15 +1,16 @@
 #include <bits/stdc++.h>
-#include <unistd.h> // Pour usleep() sur Linux
-#include <cstdlib>  // Pour system()
+#include <unistd.h>
+#include <cstdlib> 
 #include <parallel/compatibility.h>
 #include "pathTrie.hpp"
 #include "cell.hpp"
 #include "Astar.hpp"
 #include "generate-matrix.hpp"
-#include "functions.hpp" // Include the header file of functions.cpp
-#include "count_score.hpp" // Include the header file of count_score.cpp
-#define WALL "█"  // Solid block for walls
-#define PLAYER "▲"  // Emoji for player (may need Unicode support)
+#include "functions.hpp" 
+#include "count_score.hpp"
+#define WALL "█"
+#define PLAYER "▲" 
+#define LAST "▼"
 #define FAST ios::sync_with_stdio(0), cin.tie(0),cout.tie(0)
 #define RED "\033[31m"
 #define RESET "\033[0m"
@@ -37,17 +38,26 @@ void solve() {
        int nb_mots_dictionnaires;
        //cin>>nb_mots_dictionnaires;
        vector<string>list;
-    //    for(int i = 0;i<nb_mots_dictionnaires;i++) {
-    //         string s; 
-    //         cin>>s;
-    //         insertKey(root , s) ;
-    //         list.push_back(s);
+       for(int i = 0;i<nb_mots_dictionnaires;i++) {
+            string s; 
+            cin>>s;
+            insertKey(root , s) ;
+            list.push_back(s);
 
-    //     }
+        }
         list = {"anwer" ,"azizozssss","imenosss" , "tarekooss" , "malikeee" ,"les marrons"};
-    vector<vector<char>> maze = generateMaze(list,1);
-   
+
+        vector<vector<char>> maze = generateMaze(list,1);
+         int start_X=0,start_Y=0;
+        int destination_X=maze.size()-1,destination_Y=maze[0].size()-1;
+        maze[start_X][start_Y]=' ';
+        maze[destination_X][destination_Y]=' ';
         int rows = maze.size(),columns=maze[0].size();
+
+        for(int i = 0;i<rows;i++){
+            for(int j = 0;j<columns;j++) cout<<maze[i][j]<<" ";
+            cout<<endl;
+        }
         pair<int, vector<pair<int,int>>> shortest_path;
         vector<vector<int>>cost(rows+1,vector<int>(columns+1,1));
         int  shortest_path_cost;
@@ -67,30 +77,29 @@ void solve() {
             
         // }        
         // }
-        cout << "Please enter the coordinates of the starting point (x and y):" << endl;
-        int start_X=-1,start_Y=-1;
-        cin>>start_X>>start_Y; 
-        while(!verfier_colonne_ligne(start_X,start_Y,rows,columns)){
-            cout << "Please enter correct coordinates of the starting point (x and y):" << endl;
-            cin>>start_X>>start_Y; 
-        }       
+        //cout << "Please enter the coordinates of the starting point (x and y):" << endl;
+       
+        //cin>>start_X>>start_Y; 
+        // while(!verfier_colonne_ligne(start_X,start_Y,rows,columns)){
+        //     cout << "Please enter correct coordinates of the starting point (x and y):" << endl;
+        //     cin>>start_X>>start_Y; 
+        // }       
 
-        cout << "Please enter the coordinates of the destination point (x and y):" << endl;
-        int destination_X,destination_Y;
-        cin>>destination_X>>destination_Y;        
+        // cout << "Please enter the coordinates of the destination point (x and y):" << endl;
+        // 
+        // cin>>destination_X>>destination_Y;        
         
-        while(!verfier_colonne_ligne(start_X,start_Y,rows,columns)){
-            cout << "Please enter correct coordinates of the destination point (x and y):" << endl;
-            cin>>destination_X>>destination_Y;        
+        // while(!verfier_colonne_ligne(start_X,start_Y,rows,columns)){
+        //     cout << "Please enter correct coordinates of the destination point (x and y):" << endl;
+        //     cin>>destination_X>>destination_Y;        
 
-        }   
+        // }   
             //cout<<maze.size()<<" "<<maze[0].size()<<" "<<start_X<<" "<<start_Y<<endl;
 
         //    shortest path with dijextra
-            shortest_path = dijkstra(maze , cost ,{start_X,start_Y},{destination_X,destination_Y} );
-            shortest_path_cost=shortest_path.first;
-            shortest_path_reconstructed=shortest_path.second;   // reconstructed path .
-
+        shortest_path = dijkstra(maze , cost ,{start_X,start_Y},{destination_X,destination_Y} );
+        shortest_path_cost=shortest_path.first;
+        shortest_path_reconstructed=shortest_path.second;   // reconstructed path .
 
         
          // Compute shortest distances using BFS
@@ -106,11 +115,9 @@ void solve() {
         }
 
         // Find all shortest paths
-        vector<vector<pair<int, int>>> allPaths;
-        vector<pair<int, int>> currentPath;
+       vector<vector<pair<int, int>>> allPaths;
+       vector<pair<int, int>> currentPath;
        findAllPaths(maze,cost, dist, allPaths, currentPath, goal.first, goal.second, start);
-
-
 
         
         vector<vector<bool>>visited(rows+1,vector<bool>(columns+1,(false)));
@@ -123,13 +130,14 @@ void solve() {
             // Top Border
             cout <<YELLOW<< padding <<" +" << string(width*2, '-') << "+" <<RESET<<endl;
 
-          for (int i = 1; i <= rows; i++) {
+          for (int i = 0; i < rows; i++) {
             cout <<YELLOW<< padding << "| "<<RESET;
-            for (int j = 1; j <= columns; j++) {
+            for (int j = 0; j <columns; j++) {
                     if(i==playerRow && j == playerCol) visited[i][j] = true;
                     if(visited[i][j] && maze[i][j]== '#') cout<< WALL<<" "; // unvisited cells represented by a simple question mark . 
                     else if(i==playerRow && j == playerCol) cout<< RED<<PLAYER<<RESET<<" "; // unvisited cells represented by a simple question mark . 
-                    else if(visited[i][j]) cout<<maze[i][j]<<" ";
+                    else if(i==destination_X && j==destination_Y)cout<< RED<<LAST<<RESET<<" ";
+                    else if(abs(i-playerRow)<=1 && abs(j-playerCol)<=1) cout<<maze[i][j]<<" ";
                     else cout<<"? ";
                     
             }
@@ -137,7 +145,6 @@ void solve() {
         }
             cout << YELLOW <<padding<<" + " << string(width*2, '-') << "+" <<RESET<<endl;
     };
-    // here we implemented DFS with backtracking to construct all possible path from begining and for optimizing time complexity and memory we used        
     int player_row = start_X;
     int player_col = start_Y;
     long long score = 0;
@@ -148,7 +155,6 @@ void solve() {
     }
     
 
-    current_path_string+=maze[start_X][start_Y];
     vector<pair<int,int>>current_path;
     current_path.push_back({start_X,start_Y});
     displayMaze(player_row, player_col);
@@ -199,16 +205,14 @@ void solve() {
                             continue;
                         }
                         if (next_row == destination_X && next_col == destination_Y) {
-                            current_path_string+=start_Y;
                                 cout << "Congratulations! You have reached the goal!" << endl;
                                 score = count_score_func(current_path_string,root);
                                 cout << "Your score is: " << score << endl;
-                                cout << "Current path string: " << current_path_string << endl;
+                                cout << "HERE IT IS YOUR PATH: " << current_path_string << endl;
                                 for(auto k : shortest_path_reconstructed){
                                     cout<<"("<<k.first<<" "<<k.second<<") "; 
                                 }
                                 cout<<endl;
-                                
                                 break;
                         }
                         cout << "Would you like a hint about the validity of your current path ? Enter 'Y'." << endl;                 
@@ -247,10 +251,10 @@ void solve() {
 }
 int main() {
     FAST;
-//  #ifndef ONLINE_JUDGE
-//    // freopen("input.txt", "r", stdin);
+ #ifndef ONLINE_JUDGE
+   freopen("input.txt", "r", stdin);
 //    // freopen("output.txt", "w", stdout);
-//  #endif
+ #endif
     int t = 1;
     //cin >> t;
    

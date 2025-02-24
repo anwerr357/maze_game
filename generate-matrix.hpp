@@ -27,5 +27,6 @@ bool dfs(int x, int y, int index, const string& word, std::vector<std::vector<ch
 vector<vector<char>> placeWordsDFS(const vector<string>& list, vector<vector<char>>& M);
 
 vector<vector<char>> generateMaze(const vector<string> list, int d);
+bool bfs_check(const vector<vector<char>>grid, pair<int, int> start,pair<int,int>end);
 // dictionnaire 
 #endif // MAZE_GENERATOR_HPP
