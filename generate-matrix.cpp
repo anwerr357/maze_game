@@ -4,14 +4,12 @@
 #include <cstdlib>
 #include <algorithm>
 #include <random>
-#include <bits/stdc++.h>
 
-#include "generate-matrix.hpp"
 using namespace std;
 
 const int dx[] = {-1, -1, 0, 1, 1, 1, 0, -1};
 const int dy[] = {0, 1, 1, 1, 0, -1, -1, -1};
-const vector<pair<int, int>> directions = {
+const std::vector<std::pair<int, int>> directions = {
     {-1, 0}, {1, 0}, {0, -1}, {0, 1}, {-1, -1}, {-1, 1}, {1, -1}, {1, 1}
 };
 // Shuffle directions for randomness
@@ -30,9 +28,6 @@ bool isInsideMaze(int x, int y, int n, int m) {
     return x >= 0 && x < n && y >= 0 && y < m;
 }
 
-bool isValid_cell(int x, int y, int n, int m, const vector<vector<char>>& grid, const vector<vector<int>>& dist) {
-    return x >= 1 && x <= n && y >= 1 && y <= m && grid[x][y] != '#' && dist[x][y] == -1;
-}
 vector<vector<char>> generateMazeWallsDFS(int x, int y, vector<vector<char>>& maze) {
     maze[x][y] = '.';  // Mark the current cell as a path
     int n = maze.size();          
@@ -147,82 +142,46 @@ vector<vector<char>> generateMaze(vector<string> list, int d) {
     
     int n = (d-1)*10+7;
     int m = (d-1)*10+7;
-    vector<vector<char>> maze(n, vector<char>(m, '#'));
-    pair<int,int>start ,end ; 
-                
-   
 
-                srand(time(0));
-                //vector<vector<char>> maze(n, vector<char>(m, '#'));
-                maze = generateMazeWallsDFS(1, 1, maze);
-                
-                // // Print maze 
-                // for (const auto& row : maze) {
-                //     for (char cell : row) {
-                //         cout << cell << " ";
-                //     }
-                //     cout << endl;
-                // }
-                // cout << "\n";
-                maze = placeWordsDFS(list,maze);
-                // //Print maze 
-                // for (const auto& row : maze) {
-                //     for (char cell : row) {
-                //         cout << cell << " ";
-                //     }
-                //     cout << endl;
-                // }
-                // cout << "\n";
-                // filling missing cells with random letters
-                for (int i = 0; i < n; i++) {
-                    for (int j = 0; j < m; j++) {
-                        if (maze[i][j] == '.') {
-                            maze[i][j] = static_cast<char>(rand() % 26 + 'a');
-                        }
-                    }
-                }
-                //pair<int,int>start ,end ; 
-                start = {1,1}, end={n-1,n-1};
-                
-                //Print maze 
-                // for (const auto& row : maze) {
-                //     for (char cell : row) {
-                //         cout << cell << " ";
-                //     }
-                //     cout << endl;
-                // }
-                maze[start.first][start.second]=' ';
-                maze[end.first][end.second]=' ';
+     srand(time(0));
     
-    return maze;
-}
-
-
-bool bfs_check(const vector<vector<char>>grid, pair<int, int> start,pair<int,int>end) {
-    int n = grid.size()-1;
-    int m = grid[0].size()-1;
-    queue<pair<int, int>> q;
-    vector<vector<int>> dist(n+1,vector<int>(m+1,-1));
-    // Initialize distances
-    dist[start.first][start.second] = 0;
-    q.push(start);
-
-    while (!q.empty()) {
-        auto [x, y] = q.front();
-        q.pop();
-        if(x==end.first&&y==end.second){
-            return true;
+    vector<vector<char>> maze(n, vector<char>(m, '#'));
+    maze = generateMazeWallsDFS(1, 1, maze);
+    
+    // Print maze 
+    for (const auto& row : maze) {
+        for (char cell : row) {
+            cout << cell << " ";
         }
-        // Explore neighbors
-        for (int i = 0; i < 8; i++) {
-            int nx = x + dx[i];
-            int ny = y + dy[i];
+        cout << endl;
+    }
+    cout << endl <<endl;
 
-            if (isValid_cell(nx, ny, n, m, grid, dist)) {
-                dist[nx][ny] = dist[x][y] + 1;
-                q.push({nx, ny});
+    maze = placeWordsDFS(list,maze);
+    //Print maze 
+    for (const auto& row : maze) {
+        for (char cell : row) {
+            cout << cell << " ";
+        }
+        cout << endl;
+    }
+     cout << endl << endl;
+    // filling missing cells with random letters
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < m; j++) {
+            if (maze[i][j] == '.') {
+                maze[i][j] = static_cast<char>(std::rand() % 26 + 'a');
             }
         }
     }
-    return false; 
+    cout << endl <<endl;
+
+    //Print maze 
+    for (const auto& row : maze) {
+        for (char cell : row) {
+            cout << cell << " ";
+        }
+        cout << endl;
+    }
+    return maze;
 }

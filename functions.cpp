@@ -72,7 +72,10 @@ pair<int,vector<pair<int,int>>> dijkstra( vector<vector<char>>& grille, vector<v
     
     return {-1 , {{-1,-1}}}; // Pas de chemin trouvé
 }
-
+string toLowerCase(string str) {
+    transform(str.begin(), str.end(), str.begin(), ::tolower);
+    return str;
+}
 
 // Function to check if a cell is valid
 bool isValid(int x, int y, int n, int m, const vector<vector<char>>& grid, const vector<vector<int>>& dist) {

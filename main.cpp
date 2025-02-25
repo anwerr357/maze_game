@@ -8,6 +8,7 @@
 #include "generate-matrix.hpp"
 #include "functions.hpp" 
 #include "count_score.hpp"
+#include "get_countries.hpp"
 #define WALL "█"
 #define PLAYER "▲" 
 #define LAST "▼"
@@ -17,14 +18,18 @@
 #define YELLOW "\033[33m"
 
 using namespace std;
-
+string preferdRegion;
+map<int,string>map_regions_by_number;
+map<string,vector<string>>countriesByRegion;
+map<string,string>countryToRegion;
 int count_score_func(string s, TrieNode* root){
     int score = 0 ;
     for(int i = 0;i<s.size();i++){
         string current_path_string = "";
         for(int j = i;j<s.size();j++){
             current_path_string+=s[j];
-            if(searchKey(root,  current_path_string)) score++;
+            if(searchKey(root,  current_path_string)) score+=5;
+            if(countryToRegion[current_path_string]==preferdRegion) score+=5;
         }
     }   
     return score ;
@@ -32,69 +37,106 @@ int count_score_func(string s, TrieNode* root){
   
 
 void solve() {
-   // initscr();
+    TrieNode* root = new TrieNode();
+    // Api to get countries and their regions 
+    string url = "https://restcountries.com/v3.1/all";
+    string jsonData = fetchData(url);
+    // randomCountries : map of words for creating the maze 
+    vector<string> randomCountries={"Tunisia", "Germany","Canada" , "Italy","Sapin", "Egypt" , "Jordan" , "Qatar" , "Syria"};
+    
+    auto [currCountriesByRegion, currCountryToRegion] = extractCountriesByRegion(jsonData);
+    countriesByRegion = currCountriesByRegion;
+    countryToRegion = currCountryToRegion;
+     if (!jsonData.empty()) {
+        // Pick 100 random countries
+        randomCountries = getRandomCountries(countriesByRegion, 100);
+    } else {
+        cerr << "Failed to fetch data from the API." << endl;
+    }
+   int nb_mots_dictionnaires =randomCountries.size();
+   vector<string>filterCountry;
+   // filter the countries
+   for(int i = 0;i<nb_mots_dictionnaires;i++) {
+            string  s = randomCountries[i];
+            bool flag =false; 
+            for(auto c  : s)
+                {
+                    if(!(c>=65 && c<=65+25) && !(c>=97 && c<=97+25)){
+                         flag = true;       
+                    }
+                    
+                }
+
+            if(!flag) {
+                filterCountry.push_back(s);
+                insertKey(root,toLowerCase(s));
+            }
+    }
+    set<string>allRegions;
+    for(auto [k,v] : countryToRegion){
+       allRegions.insert(v);
+    }
+    int count = 1 ;
+    for(auto k : allRegions) map_regions_by_number[count]=k,count++;
+    cout<<"Choose you prefered region !"<<endl;
+    for(auto [k,v] : map_regions_by_number) {
+        cout<<"Number: "<<k<<" Region: "<<v<<endl;
+    }
+    int region ; 
+    cin>>region; 
+    preferdRegion = map_regions_by_number[region];
    
-       TrieNode* root = new TrieNode();
-       int nb_mots_dictionnaires;
-       //cin>>nb_mots_dictionnaires;
-       vector<string>list;
-       for(int i = 0;i<nb_mots_dictionnaires;i++) {
-            string s; 
-            cin>>s;
-            insertKey(root , s) ;
-            list.push_back(s);
 
-        }
-        list = {"anwer" ,"azizozssss","imenosss" , "tarekooss" , "malikeee" ,"les marrons"};
 
-        vector<vector<char>> maze = generateMaze(list,1);
-         int start_X=0,start_Y=0;
-        int destination_X=maze.size()-1,destination_Y=maze[0].size()-1;
-        maze[start_X][start_Y]=' ';
-        maze[destination_X][destination_Y]=' ';
-        int rows = maze.size(),columns=maze[0].size();
 
-        for(int i = 0;i<rows;i++){
-            for(int j = 0;j<columns;j++) cout<<maze[i][j]<<" ";
-            cout<<endl;
-        }
-        pair<int, vector<pair<int,int>>> shortest_path;
-        vector<vector<int>>cost(rows+1,vector<int>(columns+1,1));
-        int  shortest_path_cost;
-        vector<pair<int,int>> shortest_path_reconstructed;
+    vector<vector<char>> maze = generateMaze(filterCountry,1);
+    int start_X=0,start_Y=0;
+    int destination_X=maze.size()-1,destination_Y=maze[0].size()-1;
+    int rows = maze.size(),columns=maze[0].size();
+    // for(int i = 0;i<rows;i++){
+    //    for(int j = 0;j<columns;j++) cout<<maze[i][j]<<" ";
+    //        cout<<endl;
+    // }
+    maze[start_X][start_Y]=' ';
+    maze[destination_X][destination_Y]=' ';
+    
+    pair<int, vector<pair<int,int>>> shortest_path;
+    vector<vector<int>>cost(rows+1,vector<int>(columns+1,1));
+    int  shortest_path_cost;
+    vector<pair<int,int>> shortest_path_reconstructed;
 
-        // Read the cost matrix if it is possible to do so.
-        // cout << "Is your matrix weighted? (i.e., does moving from one cell to another incur a cost?)" << endl;
-        // cout << "If yes, enter 'Y'; otherwise, enter 'N'." << endl;
-        // char weighted_graph;
-        // cin>>weighted_graph;
-        // // if our graph is weighted 
-        // if(toupper(weighted_graph)=='Y'){
-        //         for(int i = 1;i<=rows;i++){
-        //         for(int j =1 ;j<=columns;j++){
-        //             cin>>cost[i][j];
-        //         }
+//         // Read the cost matrix if it is possible to do so.
+//         // cout << "Is your matrix weighted? (i.e., does moving from one cell to another incur a cost?)" << endl;
+//         // cout << "If yes, enter 'Y'; otherwise, enter 'N'." << endl;
+//         // char weighted_graph;
+//         // cin>>weighted_graph;
+//         // // if our graph is weighted 
+//         // if(toupper(weighted_graph)=='Y'){
+//         //         for(int i = 1;i<=rows;i++){
+//         //         for(int j =1 ;j<=columns;j++){
+//         //             cin>>cost[i][j];
+//         //         }
             
-        // }        
-        // }
-        //cout << "Please enter the coordinates of the starting point (x and y):" << endl;
+//         // }        
+//         // }
+//         //cout << "Please enter the coordinates of the starting point (x and y):" << endl;
        
-        //cin>>start_X>>start_Y; 
-        // while(!verfier_colonne_ligne(start_X,start_Y,rows,columns)){
-        //     cout << "Please enter correct coordinates of the starting point (x and y):" << endl;
-        //     cin>>start_X>>start_Y; 
-        // }       
+//         //cin>>start_X>>start_Y; 
+//         // while(!verfier_colonne_ligne(start_X,start_Y,rows,columns)){
+//         //     cout << "Please enter correct coordinates of the starting point (x and y):" << endl;
+//         //     cin>>start_X>>start_Y; 
+//         // }       
 
-        // cout << "Please enter the coordinates of the destination point (x and y):" << endl;
-        // 
-        // cin>>destination_X>>destination_Y;        
+//         // cout << "Please enter the coordinates of the destination point (x and y):" << endl;
+//         // 
+//         // cin>>destination_X>>destination_Y;        
         
-        // while(!verfier_colonne_ligne(start_X,start_Y,rows,columns)){
-        //     cout << "Please enter correct coordinates of the destination point (x and y):" << endl;
-        //     cin>>destination_X>>destination_Y;        
+//         // while(!verfier_colonne_ligne(start_X,start_Y,rows,columns)){
+//         //     cout << "Please enter correct coordinates of the destination point (x and y):" << endl;
+//         //     cin>>destination_X>>destination_Y;        
 
-        // }   
-            //cout<<maze.size()<<" "<<maze[0].size()<<" "<<start_X<<" "<<start_Y<<endl;
+//         // }   
+//             //cout<<maze.size()<<" "<<maze[0].size()<<" "<<start_X<<" "<<start_Y<<endl;
 
         //    shortest path with dijextra
         shortest_path = dijkstra(maze , cost ,{start_X,start_Y},{destination_X,destination_Y} );
@@ -102,7 +144,7 @@ void solve() {
         shortest_path_reconstructed=shortest_path.second;   // reconstructed path .
 
         
-         // Compute shortest distances using BFS
+        // Compute shortest distances using BFS
         vector<vector<int>> dist(rows+1, vector<int>(columns+1, -1));
         pair<int,int> start =  {start_X,start_Y};
         pair<int,int> goal = {destination_X,destination_Y} ;
@@ -121,7 +163,7 @@ void solve() {
 
         
         vector<vector<bool>>visited(rows+1,vector<bool>(columns+1,(false)));
-        // clear();
+
         // This lambda  function is designed to display the grid at a specific point during the game.
         auto displayMaze = [&](int playerRow, int playerCol ){
             string padding(maze.size(), ' '); // Offset for alignment
@@ -135,10 +177,12 @@ void solve() {
             for (int j = 0; j <columns; j++) {
                     if(i==playerRow && j == playerCol) visited[i][j] = true;
                     if(visited[i][j] && maze[i][j]== '#') cout<< WALL<<" "; // unvisited cells represented by a simple question mark . 
-                    else if(i==playerRow && j == playerCol) cout<< RED<<PLAYER<<RESET<<" "; // unvisited cells represented by a simple question mark . 
+                    else if(i==playerRow && j == playerCol) cout<<RED<<PLAYER<<RESET<<" "; // unvisited cells represented by a simple question mark . 
+                    else if(visited[i][j]) cout<<maze[i][j]<<" ";
                     else if(i==destination_X && j==destination_Y)cout<< RED<<LAST<<RESET<<" ";
                     else if(abs(i-playerRow)<=1 && abs(j-playerCol)<=1) cout<<maze[i][j]<<" ";
-                    else cout<<"? ";
+                    else if(!visited[i][j] && maze[i][j]>=65 && maze[i][j]<=65+25) cout<<YELLOW<<'?'<<RESET<<" ";
+                    else if(!visited[i][j])cout<<'?'<<" ";
                     
             }
             cout << YELLOW<<" |" <<RESET<< endl;
@@ -147,9 +191,10 @@ void solve() {
     };
     int player_row = start_X;
     int player_col = start_Y;
+    cout<<player_row<<" "<<player_col<<endl;
     long long score = 0;
     string current_path_string = "" ;
-   PathTrie trie({start_X, start_Y});
+    PathTrie trie({start_X, start_Y});
     for(auto path : allPaths){
         trie.insert(path);
     }
@@ -251,10 +296,10 @@ void solve() {
 }
 int main() {
     FAST;
- #ifndef ONLINE_JUDGE
-   freopen("input.txt", "r", stdin);
+//  #ifndef ONLINE_JUDGE
+//    //freopen("input.txt", "r", stdin);
 //    // freopen("output.txt", "w", stdout);
- #endif
+//  #endif
     int t = 1;
     //cin >> t;
    
