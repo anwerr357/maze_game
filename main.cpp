@@ -4,7 +4,6 @@
 #include <parallel/compatibility.h>
 #include "pathTrie.hpp"
 #include "cell.hpp"
-#include "Astar.hpp"
 #include "generate-matrix.hpp"
 #include "functions.hpp" 
 #include "count_score.hpp"
@@ -85,18 +84,21 @@ void solve() {
     int region ; 
     cin>>region; 
     preferdRegion = map_regions_by_number[region];
-   
+    cout<<"Choose dificulity: "<<endl;
+    cout<<"1: Easy"<<endl;
+    cout<<"2: Medium"<<endl;
+    cout<<"3: Hard"<<endl;
+    int difficulty; 
+    cin>>difficulty;
+    if(difficulty<1) difficulty=1;
+    if(difficulty>3) difficulty=3;
 
 
-
-    vector<vector<char>> maze = generateMaze(filterCountry,1);
+    vector<vector<char>> maze = generateMaze(filterCountry,difficulty);
     int start_X=0,start_Y=0;
     int destination_X=maze.size()-1,destination_Y=maze[0].size()-1;
     int rows = maze.size(),columns=maze[0].size();
-    // for(int i = 0;i<rows;i++){
-    //    for(int j = 0;j<columns;j++) cout<<maze[i][j]<<" ";
-    //        cout<<endl;
-    // }
+    
     maze[start_X][start_Y]=' ';
     maze[destination_X][destination_Y]=' ';
     
@@ -105,38 +107,7 @@ void solve() {
     int  shortest_path_cost;
     vector<pair<int,int>> shortest_path_reconstructed;
 
-//         // Read the cost matrix if it is possible to do so.
-//         // cout << "Is your matrix weighted? (i.e., does moving from one cell to another incur a cost?)" << endl;
-//         // cout << "If yes, enter 'Y'; otherwise, enter 'N'." << endl;
-//         // char weighted_graph;
-//         // cin>>weighted_graph;
-//         // // if our graph is weighted 
-//         // if(toupper(weighted_graph)=='Y'){
-//         //         for(int i = 1;i<=rows;i++){
-//         //         for(int j =1 ;j<=columns;j++){
-//         //             cin>>cost[i][j];
-//         //         }
-            
-//         // }        
-//         // }
-//         //cout << "Please enter the coordinates of the starting point (x and y):" << endl;
-       
-//         //cin>>start_X>>start_Y; 
-//         // while(!verfier_colonne_ligne(start_X,start_Y,rows,columns)){
-//         //     cout << "Please enter correct coordinates of the starting point (x and y):" << endl;
-//         //     cin>>start_X>>start_Y; 
-//         // }       
 
-//         // cout << "Please enter the coordinates of the destination point (x and y):" << endl;
-//         // 
-//         // cin>>destination_X>>destination_Y;        
-        
-//         // while(!verfier_colonne_ligne(start_X,start_Y,rows,columns)){
-//         //     cout << "Please enter correct coordinates of the destination point (x and y):" << endl;
-//         //     cin>>destination_X>>destination_Y;        
-
-//         // }   
-//             //cout<<maze.size()<<" "<<maze[0].size()<<" "<<start_X<<" "<<start_Y<<endl;
 
         //    shortest path with dijextra
         shortest_path = dijkstra(maze , cost ,{start_X,start_Y},{destination_X,destination_Y} );
@@ -202,7 +173,7 @@ void solve() {
 
     vector<pair<int,int>>current_path;
     current_path.push_back({start_X,start_Y});
-    displayMaze(player_row, player_col);
+    //displayMaze(player_row, player_col);
 
     while (true) {
      
@@ -224,35 +195,46 @@ void solve() {
         }
         displayMaze(player_row, player_col);
 
-        // Keyboard input handling
-        cout << "Please enter a number corresponding to the movement direction:" << endl
-            << "1: Left, 2: Right, 3: Up, 4: Down," << endl
-            << "5: Down-Right, 6: Down-Left, 7: Up-Left, 8: Up-Right" << endl;
-        int input;
+          cout << "Please enter a number corresponding to the movement direction:" << endl
+            << "7: Up-Left   | 8: Up   | 9: Up-Right" << endl
+            << "4: Left      | 5: hint | 6:Right" << endl
+            << "1: Down-Left | 2: Down | 3: Down-Righ" << endl
+            << "0: Backtarack" << endl;
+        string input;
         // ****Capture the pressed key****
         cin >> input;
         // ****Player movement****
          // Displaying the matrix using the lambda function  
-        #ifdef _WIN32
-            system("cls");  // Windows
-        #else
-            system("clear"); // Linux/macOS
-        #endif  
-          if(input>=1 && input<=8){
-                input--; 
+        // #ifdef _WIN32
+        //     system("cls");  // Windows
+        // #else
+        //     system("clear"); // Linux/macOS
+        // #endif  
+        cout<<input<<endl;
+        map<int,pair<int,int>>dir;
+        dir[1]={1,-1},dir[2]={1,0},dir[3]={1,1},dir[4]={0,-1},dir[6]={0,1},dir[7]={-1,-1},dir[8]={-1,0},dir[9]={-1,1};
+          if(input[0]>='1' && input[0]<='8' && input.size()==1){
+                int inputNumb = input[0]-'0'; 
+                cout<<"inputNumb  "<<inputNumb<<endl;
                 // ici on a fait input -- car le tableau est indexé de 0
-                int next_row = player_row+direction[input][0];
-                int next_col = player_col+direction[input][1];
+                int next_row = player_row+dir[inputNumb].first;
+                int next_col = player_col+dir[inputNumb].first;
+                if(current_path_string.size()>=1)cout<<"Current Score : "<<count_score_func(current_path_string,root)<<endl;
+                
                 if (verfier_colonne_ligne(next_col, next_row,rows,columns)==true){
                          // verify if the player reached the goal
                         if(maze[next_row][next_col] == '#'){
+                            visited[next_row][next_col] = true;
                             cout << "This point in the maze is a wall. Please choose another direction." << endl;
                             continue;
                         }
                         if (next_row == destination_X && next_col == destination_Y) {
                                 cout << "Congratulations! You have reached the goal!" << endl;
                                 score = count_score_func(current_path_string,root);
-                                cout << "Your score is: " << score << endl;
+                                double denom=1;
+                                double bonus = (denom/current_path_string.size())*100;
+                                if(trie.contains(current_path)) bonus+=10;
+                                cout << "Your score is: " << score + bonus << endl;
                                 cout << "HERE IT IS YOUR PATH: " << current_path_string << endl;
                                 for(auto k : shortest_path_reconstructed){
                                     cout<<"("<<k.first<<" "<<k.second<<") "; 
@@ -261,9 +243,9 @@ void solve() {
                                 break;
                         }
                         cout << "Would you like a hint about the validity of your current path ? Enter 'Y'." << endl;                 
-                        char hint_current; 
+                        string hint_current; 
                         cin>>hint_current;
-                        if(toupper(hint_current)=='Y'){
+                        if(toupper(hint_current[0])=='Y'){
                                 if(trie.contains_prefix(current_path)){
                                         cout << "YES! CONTINUE!." << endl;
                                 }
@@ -278,6 +260,7 @@ void solve() {
                         player_row = next_row ; 
                         player_col = next_col ; 
                         current_path.push_back({player_row,player_col});
+                        current_path_string+=maze[next_row][next_col];
                         
                  }
                 else {

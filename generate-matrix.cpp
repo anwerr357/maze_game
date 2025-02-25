@@ -149,23 +149,23 @@ vector<vector<char>> generateMaze(vector<string> list, int d) {
     maze = generateMazeWallsDFS(1, 1, maze);
     
     // Print maze 
-    for (const auto& row : maze) {
-        for (char cell : row) {
-            cout << cell << " ";
-        }
-        cout << endl;
-    }
-    cout << endl <<endl;
+    // for (const auto& row : maze) {
+    //     for (char cell : row) {
+    //         cout << cell << " ";
+    //     }
+    //     cout << endl;
+    // }
+    // cout << endl <<endl;
 
     maze = placeWordsDFS(list,maze);
     //Print maze 
-    for (const auto& row : maze) {
-        for (char cell : row) {
-            cout << cell << " ";
-        }
-        cout << endl;
-    }
-     cout << endl << endl;
+    // for (const auto& row : maze) {
+    //     for (char cell : row) {
+    //         cout << cell << " ";
+    //     }
+    //     cout << endl;
+    // }
+    //  cout << endl << endl;
     // filling missing cells with random letters
     for (int i = 0; i < n; i++) {
         for (int j = 0; j < m; j++) {
@@ -174,14 +174,14 @@ vector<vector<char>> generateMaze(vector<string> list, int d) {
             }
         }
     }
-    cout << endl <<endl;
+    // cout << endl <<endl;
 
-    //Print maze 
-    for (const auto& row : maze) {
-        for (char cell : row) {
-            cout << cell << " ";
-        }
-        cout << endl;
-    }
+    // //Print maze 
+    // for (const auto& row : maze) {
+    //     for (char cell : row) {
+    //         cout << cell << " ";
+    //     }
+    //     cout << endl;
+    // }
     return maze;
 }
