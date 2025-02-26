@@ -68,6 +68,7 @@ bool dfs(int x, int y, int index, const std::string& word, vector<vector<char>>&
             M[newX][newY] = word[index];
             path.push_back({newX, newY});
 
+
             if (dfs(newX, newY, index + 1, word, M, path)) {
                 return true;
             }
