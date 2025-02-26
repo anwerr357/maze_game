@@ -15,7 +15,8 @@
 #define RED "\033[31m"
 #define RESET "\033[0m"
 #define YELLOW "\033[33m"
-
+//auto r = equal_range(array, array+n, x);
+// cout << r.second-r.first << "\n";
 using namespace std;
 string preferdRegion;
 map<int,string>map_regions_by_number;
@@ -134,8 +135,8 @@ void solve() {
        vector<pair<int, int>> currentPath;
        findAllPaths(maze,cost, dist, allPaths, currentPath, goal.first, goal.second, start);
 
-        
-        vector<vector<bool>>visited(rows+1,vector<bool>(columns+1,(false)));
+        bool easy_level  = (difficulty==1 ? true : false);
+        vector<vector<bool>>visited(rows+1,vector<bool>(columns+1,(false))),colored(rows+1,vector<bool>(columns+1,(easy_level)));
 
         // This lambda  function is designed to display the grid at a specific point during the game.
         auto displayMaze = [&](int playerRow, int playerCol ){
@@ -155,7 +156,7 @@ void solve() {
                     else if(i==destination_X && j==destination_Y)cout<< RED<<LAST<<RESET<<" ";
                     else if(abs(i-playerRow)<=1 && abs(j-playerCol)<=1 && maze[i][j]=='#') cout<<WALL<<" ";
                     else if(abs(i-playerRow)<=1 && abs(j-playerCol)<=1 ) cout<<maze[i][j]<<" ";
-                    else if(!visited[i][j] && maze[i][j]>=65 && maze[i][j]<=65+25) cout<<YELLOW<<'?'<<RESET<<" ";
+                    else if(!visited[i][j] && maze[i][j]>=65 && maze[i][j]<=65+25 && colored[i][j]) cout<<YELLOW<<'?'<<RESET<<" ";
                     else if(!visited[i][j])cout<<'?'<<" ";
                     
             }
@@ -166,7 +167,6 @@ void solve() {
     int player_row = start_X;
 
     int player_col = start_Y;
-    cout<<player_row<<" "<<player_col<<endl;
     long long score = 0;
     string current_path_string = "" ;
     PathTrie trie({start_X, start_Y});
@@ -185,7 +185,7 @@ void solve() {
    int last_row =-1; 
    int last_col =-1;
     while (true) {
-     
+        cout<<"Your current path : "<<current_path_string<<endl;
         displayMaze(player_row, player_col);
         // Keyboard input handling
         cout << "Please enter a number corresponding to the movement direction:" << endl
@@ -214,10 +214,9 @@ void solve() {
         input = chInput[0]-'0';
         if (input==0){
             if(current_path.size()>1){
-                cout << "Do you want to backtrack? Enter 'Y' if yes." << endl;
-                string descision; 
+                    cout << "Do you want to backtrack? Enter 'Y' if yes." << endl;
+                    string descision; 
                     cin>>descision;
-            
                     descision = toupper(descision[0]);
                     if(descision[0]=='Y'){
                         auto to_delete_step = current_path.back();
@@ -241,6 +240,17 @@ void solve() {
           
             hint_current = toupper(hint_current[0]);
             if(hint_current[0]=='Y'){
+                    bool check_flag=false;
+                    for(int i = 0;i<rows;i++) {
+                        for(int j = 0;j<columns;j++) {
+                        if(maze[i][j]=='?' && !colored[i][j]) {
+                            colored[i][j]=true;
+                            check_flag=true;
+                            break;
+                        }
+                        if(check_flag) break;
+                    }
+                    }
                     if(trie.contains_prefix(current_path)){
                             cout << "YES! CONTINUE!." << endl;
                     }
@@ -291,7 +301,7 @@ void solve() {
                                 cout << "Congratulations! You have reached the goal!" << endl;
                                 score = count_score_func(toLowerCase(current_path_string),root);
                                 int bonus =5 ;
-                                displayMaze(player_row, player_col);
+                                //displayMaze(player_row, player_col);
 
                                 for(int i =0;i<rows;i++) for(int j = 0;j<columns;j++) visited[i][j]=true;
                                 displayMaze(player_row, player_col);
@@ -299,11 +309,7 @@ void solve() {
                                 if(trie.contains(current_path)==true) bonus+=10 ;
                                 cout << "Your score is: " << score + bonus << endl;
                                 cout << "HERE IT IS YOUR PATH: " << current_path_string << endl;
-
-                                // for(auto k : shortest_path_reconstructed){
-                                //     cout<<"("<<k.first<<" "<<k.second<<") :"<<maze[k.first][k.second]<<endl; 
-                                // }
-                                // cout<<endl;
+                              
                                 break;
                         }
                                                
